@@ -40,6 +40,11 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private List<AddLinkListener> addLinkListeners;
     private List<NodeListener> nodeListeners;
     
+    private int[] mousePos = new int[2];
+    
+    private int draggedNodeIndex = -1;
+    
+    
     public Panel(List<Node> nodes, int width, int height){
         super();
         this.nodes = nodes;
@@ -79,6 +84,10 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
            }
         }
         
+        if(drawNode == false && nodePair[0] != null && nodePair[1] == null){
+            g2d.drawLine(mousePos[0], mousePos[1], nodePair[0].x, nodePair[0].y);
+        }
+        
         for(NodePosition nodePosition : nodePositions){
             int nodex = nodePosition.x - NODE_RADIUS;
             int nodey = nodePosition.y - NODE_RADIUS;
@@ -114,8 +123,8 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     public void mouseClicked(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-            
-        if(drawNode){
+       
+        if(drawNode && e.getButton() == MouseEvent.BUTTON1){
             //Ajouter un noeud
             //Position de la souris
 
@@ -187,6 +196,23 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     
     @Override
     public void mousePressed(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+        System.out.println(x + ", " + y);
+            if(e.getButton() == MouseEvent.BUTTON3){
+            if(draggedNodeIndex >= 0){
+                draggedNodeIndex = -1;
+            } else {
+            for(int i = 0; i < nodePositions.size(); i++){
+                NodePosition np = nodePositions.get(i);
+                System.out.println(np.x + ", " + np.y);
+                if(this.detectedCollision(x, y, np)){
+                    draggedNodeIndex = i;
+                    System.out.println("Drag index");
+                }
+            }
+           }
+        }
     }
 
     @Override
@@ -207,6 +233,18 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void mouseMoved(MouseEvent e) {
+          mousePos[0] = e.getX();
+          mousePos[1] = e.getY();
+          
+          System.out.println(draggedNodeIndex);
+          if(draggedNodeIndex >= 0){
+              System.out.println("Drag on Mouse move");
+              nodePositions.get(draggedNodeIndex).x = mousePos[0];
+              nodePositions.get(draggedNodeIndex).y = mousePos[1];
+          }
+          
+          repaint();
+
     }
 }
 
@@ -229,3 +267,20 @@ interface AddLinkListener {
 interface NodeListener {
     void update(Node node);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
